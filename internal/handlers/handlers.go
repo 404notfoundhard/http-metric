@@ -1,40 +1,17 @@
-package main
+// / сервер вываливается exit status 1 если брать хендлеры отсюда при post запросе, непонятно
+package handlers
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/caarlos0/env/v6"
-
-	myflags "internal/myFlags"
-	myMetrics "internal/myMetrics"
-
-	"github.com/go-chi/chi/v5"
+	"github.com/404notfoundhard/http-metric.git/internal/myMetrics"
+	"github.com/go-chi/chi"
 )
-
-func main() {
-	addr := &myflags.ListenAddres{Host: "localhost", Port: "8080"}
-	flag.Var(addr, "a", "Net address host:port")
-	flag.Parse()
-	env.Parse(addr)
-	fmt.Println(addr)
-	r := chi.NewRouter()
-	my_metrics := new(myMetrics.Metrics)
-	// r.Use(middleware.Logger)
-	// r.Use(middleware.Recoverer)
-
-	r.Get("/", GetAllValuesHandle(my_metrics))
-	r.Get("/value/{type}/{name}", GetValueHandle(my_metrics))
-	r.Post("/update/{type}/{name}/{value}", SetValueHandle(my_metrics))
-	fmt.Printf("Server running on %s:%s...\n", addr.Host, addr.Port)
-	log.Fatal(http.ListenAndServe(addr.Host+":"+addr.Port, r))
-
-}
 
 func SetValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
 	var err error
