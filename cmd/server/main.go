@@ -2,18 +2,125 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/404notfoundhard/http-metric.git/internal/myMetrics"
-	"github.com/go-chi/chi/middleware"
+	myflags "github.com/404notfoundhard/http-metric.git/internal/myFlags"
+	myMetrics "github.com/404notfoundhard/http-metric.git/internal/myMetrics"
 	"github.com/go-chi/chi/v5"
 )
 
-func getValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
+func main() {
+	addr := &myflags.ListenAddres{Host: "localhost", Port: "8080"}
+	flag.Var(addr, "a", "Net address host:port")
+	flag.Parse()
+
+	r := chi.NewRouter()
+	my_metrics := new(myMetrics.Metrics)
+	// r.Use(middleware.Logger)
+	// r.Use(middleware.Recoverer)
+
+	r.Get("/", GetAllValuesHandle(my_metrics))
+	r.Get("/value/{type}/{name}", GetValueHandle(my_metrics))
+	r.Post("/update/{type}/{name}/{value}", SetValueHandle(my_metrics))
+	fmt.Printf("Server running on %s:%s...\n", addr.Host, addr.Port)
+	log.Fatal(http.ListenAndServe(addr.Host+":"+addr.Port, r))
+
+}
+
+func SetValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
+	var err error
+	return func(respWr http.ResponseWriter, r *http.Request) {
+		fmt.Println(chi.URLParam(r, "name"))
+		switch {
+		case chi.URLParam(r, "name") == "GCCPUFraction":
+			m.GCCPUFraction, err = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println(m)
+		case chi.URLParam(r, "name") == "Alloc":
+			m.Alloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "BuckHashSys":
+			m.BuckHashSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "Frees":
+			m.Frees, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "GCSys":
+			m.GCSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapAlloc":
+			m.HeapAlloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapIdle":
+			m.HeapIdle, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapInuse":
+			m.HeapInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapObjects":
+			m.HeapObjects, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapReleased":
+			m.HeapReleased, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "HeapSys":
+			m.HeapSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "LastGC":
+			m.LastGC, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "Lookups":
+			m.Lookups, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "MCacheInuse":
+			m.MCacheInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "MCacheSys":
+			m.MCacheSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "MSpanInuse":
+			m.MSpanInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "MSpanSys":
+			m.MSpanSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "Mallocs":
+			m.Mallocs, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "NextGC":
+			m.NextGC, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "NumForcedGC":
+			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
+			m.NumForcedGC = uint32(tmp)
+		case chi.URLParam(r, "name") == "NumGC":
+			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
+			m.NumGC = uint32(tmp)
+		case chi.URLParam(r, "name") == "OtherSys":
+			m.OtherSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "PauseTotalNs":
+			m.PauseTotalNs, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "StackInuse":
+			m.StackInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "StackSys":
+			m.StackSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "Sys":
+			m.Sys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "TotalAlloc":
+			m.TotalAlloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		case chi.URLParam(r, "name") == "RandomValue":
+			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
+			m.RandomValue = uint32(tmp)
+		case chi.URLParam(r, "name") == "PollCount":
+			m.PollCount, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
+		default:
+			fmt.Println(m)
+			log.Fatal(chi.URLParam(r, "value"))
+			log.Fatal("Unknown metric")
+		}
+	}
+}
+
+func GetAllValuesHandle(m *myMetrics.Metrics) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, err := json.MarshalIndent(m, " ", " ")
+		if err != nil {
+			fmt.Println("error marshal json: ", err)
+		}
+		io.WriteString(w, string(res))
+	}
+}
+
+func GetValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case chi.URLParam(r, "name") == "GCCPUFraction":
@@ -78,100 +185,4 @@ func getValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
 			http.Error(w, "Not found", http.StatusNotFound)
 		}
 	}
-}
-
-func getAllValuesHandle(m *myMetrics.Metrics) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		res, err := json.MarshalIndent(m, " ", " ")
-		if err != nil {
-			fmt.Println("error marshal json: ", err)
-		}
-		io.WriteString(w, string(res))
-	}
-}
-
-func setValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
-	return func(respWr http.ResponseWriter, r *http.Request) {
-		switch {
-		case chi.URLParam(r, "name") == "GCCPUFraction":
-			m.GCCPUFraction, _ = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
-		case chi.URLParam(r, "name") == "Alloc":
-			m.Alloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "BuckHashSys":
-			m.BuckHashSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "Frees":
-			m.Frees, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "GCSys":
-			m.GCSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapAlloc":
-			m.HeapAlloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapIdle":
-			m.HeapIdle, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapInuse":
-			m.HeapInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapObjects":
-			m.HeapObjects, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapReleased":
-			m.HeapReleased, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "HeapSys":
-			m.HeapSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "LastGC":
-			m.LastGC, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "Lookups":
-			m.Lookups, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "MCacheInuse":
-			m.MCacheInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "MCacheSys":
-			m.MCacheSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "MSpanInuse":
-			m.MSpanInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "MSpanSys":
-			m.MSpanSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "Mallocs":
-			m.Mallocs, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "NextGC":
-			m.NextGC, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "NumForcedGC":
-			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
-			m.NumForcedGC = uint32(tmp)
-		case chi.URLParam(r, "name") == "NumGC":
-			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
-			m.NumGC = uint32(tmp)
-		case chi.URLParam(r, "name") == "OtherSys":
-			m.OtherSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "PauseTotalNs":
-			m.PauseTotalNs, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "StackInuse":
-			m.StackInuse, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "StackSys":
-			m.StackSys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "Sys":
-			m.Sys, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "TotalAlloc":
-			m.TotalAlloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		case chi.URLParam(r, "name") == "RandomValue":
-			tmp, _ := strconv.ParseUint((chi.URLParam(r, "value")), 10, 32)
-			m.RandomValue = uint32(tmp)
-		case chi.URLParam(r, "name") == "PollCount":
-			m.PollCount, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
-		default:
-			log.Fatal("Unknown metric")
-		}
-	}
-}
-
-func main() {
-	r := chi.NewRouter()
-	my_metrics := new(myMetrics.Metrics)
-	// r.Use(middleware.requestID?)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	// r.Use(middleware.URLFormat)
-
-	// myMetrika := new(myMetrics.Metrics)
-	r.Get("/", getAllValuesHandle(my_metrics))
-	r.Get("/value/{type}/{name}", getValueHandle(my_metrics))
-	r.Post("/update/{type}/{name}/{value}", setValueHandle(my_metrics))
-	log.Fatal(http.ListenAndServe(":8080", r))
-
 }
