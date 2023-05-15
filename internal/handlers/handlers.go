@@ -1,46 +1,30 @@
-package main
+// / сервер вываливается exit status 1 если брать хендлеры отсюда при post запросе, непонятно
+package handlers
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/caarlos0/env/v6"
-
-	myflags "internal/myFlags"
 	myMetrics "internal/myMetrics"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 )
 
-func main() {
-	addr := &myflags.ListenAddres{Host: "localhost", Port: "8080"}
-	flag.Var(addr, "a", "Net address host:port")
-	flag.Parse()
-	env.Parse(addr)
-	fmt.Println(addr)
-	r := chi.NewRouter()
-	Metrika := new(myMetrics.Metrics)
-	// r.Use(middleware.Logger)
-	// r.Use(middleware.Recoverer)
-
-	r.Get("/", GetAllValuesHandle(Metrika))
-	r.Get("/value/{type}/{name}", GetValueHandle(Metrika))
-	r.Post("/update/{type}/{name}/{value}", SetValueHandle(Metrika))
-	fmt.Printf("Server running on %s:%s...\n", addr.Host, addr.Port)
-	log.Fatal(http.ListenAndServe(addr.Host+":"+addr.Port, r))
-
-}
-
 func SetValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
+	var err error
 	return func(respWr http.ResponseWriter, r *http.Request) {
+		fmt.Println(chi.URLParam(r, "name"))
 		switch {
 		case chi.URLParam(r, "name") == "GCCPUFraction":
-			m.GCCPUFraction, _ = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
+			m.GCCPUFraction, err = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println(m)
 		case chi.URLParam(r, "name") == "Alloc":
 			m.Alloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
 		case chi.URLParam(r, "name") == "BuckHashSys":
