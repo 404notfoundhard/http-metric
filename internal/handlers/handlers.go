@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/404notfoundhard/http-metric.git/internal/myMetrics"
+	myMetrics "internal/myMetrics"
+
 	"github.com/go-chi/chi"
 )
 
