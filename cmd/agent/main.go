@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/404notfoundhard/http-metric.git/internal/metrics"
+	"github.com/404notfoundhard/http-metric.git/internal/myMetrics"
 )
 
-func preprocessMetrik(metr metrics.Metrics) ([]string, error) {
+func preprocessMetrik(metr myMetrics.Metrics) ([]string, error) {
 	values := reflect.ValueOf(metr)
 	types := values.Type()
 	var value string
@@ -43,7 +43,7 @@ func preprocessMetrik(metr metrics.Metrics) ([]string, error) {
 	return result, nil
 }
 
-func SendMetrics(metr metrics.Metrics, f func(metr metrics.Metrics) ([]string, error)) {
+func SendMetrics(metr myMetrics.Metrics, f func(metr myMetrics.Metrics) ([]string, error)) {
 	urls, err := f(metr)
 	if err != nil {
 		log.Fatal(err)
@@ -60,16 +60,13 @@ func SendMetrics(metr metrics.Metrics, f func(metr metrics.Metrics) ([]string, e
 }
 
 func main() {
-	var counter uint64
+	var mycounter uint64
 	for {
-		counter++
-		my_metrics := metrics.Metrics{}
+		mycounter++
+		my_metrics := myMetrics.Metrics{}
 		my_metrics = my_metrics.ReadMetrics()
-		my_metrics.PollCount = counter
+		my_metrics.PollCount = mycounter
 		SendMetrics(my_metrics, preprocessMetrik)
-		time.Sleep(2 * time.Second)
+		time.Sleep(22 * time.Second)
 	}
-
-	// metrics_agent := make(map[string], 0)
-
 }

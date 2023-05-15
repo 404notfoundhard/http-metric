@@ -1,4 +1,4 @@
-package metrics
+package myMetrics
 
 import (
 	"math/rand"
@@ -33,8 +33,8 @@ type Metrics struct {
 	StackSys      uint64
 	Sys           uint64
 	TotalAlloc    uint64
-	PollCount     uint64
 	RandomValue   uint32
+	PollCount     uint64
 }
 
 func (m Metrics) ReadMetrics() Metrics {
@@ -70,5 +70,4 @@ func (m Metrics) ReadMetrics() Metrics {
 		TotalAlloc:    rtm.TotalAlloc,
 		RandomValue:   uint32(rand.Int31()),
 	}
-
 }
