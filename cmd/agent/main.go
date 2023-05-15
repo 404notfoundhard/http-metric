@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"internal/myMetrics"
+	myMetrics "internal/myMetrics"
 )
 
 var serverAddress = flag.String("serverAddress", "localhost:8080", "Адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080)")
