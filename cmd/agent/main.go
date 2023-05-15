@@ -13,11 +13,9 @@ import (
 	"github.com/404notfoundhard/http-metric.git/internal/myMetrics"
 )
 
-var (
-	serverAddress  = flag.String("serverAddress", "localhost:8080", "Адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080)")
-	pollInterval   = flag.Int("pollInterval", 10, "Частота отправки метрик на сервер (по умолчанию 10 секунд)")
-	reportInterval = flag.Int("reportInterval", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)") // откуда это?????
-)
+var serverAddress = flag.String("serverAddress", "localhost:8080", "Адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080)")
+var pollInterval = flag.Int("pollInterval", 10, "Частота отправки метрик на сервер (по умолчанию 10 секунд)")
+var reportInterval = flag.Int("reportInterval", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)") // откуда это?????
 
 func preprocessMetrik(metr myMetrics.Metrics) ([]string, error) {
 	values := reflect.ValueOf(metr)

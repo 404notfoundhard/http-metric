@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/caarlos0/env/v6"
+
 	myflags "github.com/404notfoundhard/http-metric.git/internal/myFlags"
 	myMetrics "github.com/404notfoundhard/http-metric.git/internal/myMetrics"
 	"github.com/go-chi/chi/v5"
@@ -18,7 +20,8 @@ func main() {
 	addr := &myflags.ListenAddres{Host: "localhost", Port: "8080"}
 	flag.Var(addr, "a", "Net address host:port")
 	flag.Parse()
-
+	env.Parse(addr)
+	fmt.Println(addr)
 	r := chi.NewRouter()
 	my_metrics := new(myMetrics.Metrics)
 	// r.Use(middleware.Logger)
