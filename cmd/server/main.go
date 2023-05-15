@@ -37,16 +37,10 @@ func main() {
 }
 
 func SetValueHandle(m *myMetrics.Metrics) http.HandlerFunc {
-	var err error
 	return func(respWr http.ResponseWriter, r *http.Request) {
-		fmt.Println(chi.URLParam(r, "name"))
 		switch {
 		case chi.URLParam(r, "name") == "GCCPUFraction":
-			m.GCCPUFraction, err = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
-			if err != nil {
-				fmt.Println(err)
-			}
-			fmt.Println(m)
+			m.GCCPUFraction, _ = strconv.ParseFloat(chi.URLParam(r, "value"), 64)
 		case chi.URLParam(r, "name") == "Alloc":
 			m.Alloc, _ = strconv.ParseUint((chi.URLParam(r, "value")), 10, 64)
 		case chi.URLParam(r, "name") == "BuckHashSys":
