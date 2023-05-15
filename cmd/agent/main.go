@@ -61,6 +61,7 @@ func SendMetrics(metr myMetrics.Metrics, f func(metr myMetrics.Metrics) ([]strin
 		} else if resp.StatusCode != http.StatusOK {
 			log.Fatal(resp.StatusCode)
 		}
+		defer resp.Body.Close()
 		log.Print(resp.StatusCode)
 	}
 }
