@@ -24,13 +24,13 @@ func main() {
 	env.Parse(addr)
 	fmt.Println(addr)
 	r := chi.NewRouter()
-	my_metrics := new(myMetrics.Metrics)
+	Metrika := new(myMetrics.Metrics)
 	// r.Use(middleware.Logger)
 	// r.Use(middleware.Recoverer)
 
-	r.Get("/", GetAllValuesHandle(my_metrics))
-	r.Get("/value/{type}/{name}", GetValueHandle(my_metrics))
-	r.Post("/update/{type}/{name}/{value}", SetValueHandle(my_metrics))
+	r.Get("/", GetAllValuesHandle(Metrika))
+	r.Get("/value/{type}/{name}", GetValueHandle(Metrika))
+	r.Post("/update/{type}/{name}/{value}", SetValueHandle(Metrika))
 	fmt.Printf("Server running on %s:%s...\n", addr.Host, addr.Port)
 	log.Fatal(http.ListenAndServe(addr.Host+":"+addr.Port, r))
 
