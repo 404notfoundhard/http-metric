@@ -70,10 +70,10 @@ func main() {
 	var mycounter uint64
 	for {
 		mycounter++
-		my_metrics := myMetrics.Metrics{}
-		my_metrics = my_metrics.ReadMetrics()
-		my_metrics.PollCount = mycounter
-		SendMetrics(my_metrics, preprocessMetrik)
+		Metrika := myMetrics.Metrics{}
+		Metrika = Metrika.ReadMetrics()
+		Metrika.PollCount = mycounter
+		SendMetrics(Metrika, preprocessMetrik)
 		time.Sleep(time.Duration(*reportInterval) * time.Second)
 	}
 }
